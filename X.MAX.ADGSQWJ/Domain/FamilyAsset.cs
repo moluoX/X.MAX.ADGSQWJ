@@ -31,7 +31,7 @@ namespace X.MAX.ADGSQWJ.Domain
                 buy.Index = i;
                 buy.InitialHousePrice = _HouseAsset.CalHouseDepreciationPrice(i);
                 buy.InitialHouseDebt = _HouseAsset.CalYearlyLoanResidualPrinciple(i);
-                buy.ExpenseHouseLoan = _HouseAsset.YearlyLoanPayment;
+                buy.ExpenseHouseLoan = _HouseAsset.CalYearlyLoanPayment(i + 1);
                 buy.FinalHousePrice = _HouseAsset.CalHouseDepreciationPrice(i + 1);
                 buy.FinalHouseDebt = _HouseAsset.CalYearlyLoanResidualPrinciple(i + 1);
                 _BuyList.Add(buy);
@@ -40,8 +40,8 @@ namespace X.MAX.ADGSQWJ.Domain
                 rent.Index = i;
                 rent.InitialNetAsset = _Fund.Principal;
                 rent.IncomeInterest = _Fund.CalYield();
-                rent.IncomeHouseLoan = _HouseAsset.YearlyLoanPayment;
-                rent.ExpenseHouseRent = _HouseAsset.CalRent(i);
+                rent.IncomeHouseLoan = _HouseAsset.CalYearlyLoanPayment(i + 1);
+                rent.ExpenseHouseRent = _HouseAsset.CalRent(i + 1);
                 _RentList.Add(rent);
                 last = rent;
             }

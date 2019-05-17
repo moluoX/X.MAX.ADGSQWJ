@@ -112,6 +112,15 @@ namespace X.MAX.ADGSQWJ.Domain
         }
 
         /// <summary>
+        /// 算房贷年还款总额
+        /// </summary>
+        /// <returns></returns>
+        public decimal CalYearlyLoanPayment(int year)
+        {
+            return year <= 0 || year > LoanYears ? 0 : YearlyLoanPayment;
+        }
+
+        /// <summary>
         /// 算房贷月还款本金
         /// </summary>
         /// <returns></returns>
@@ -154,7 +163,7 @@ namespace X.MAX.ADGSQWJ.Domain
         /// <returns></returns>
         public decimal CalRent(int year)
         {
-            return CalHouseDepreciationPrice(year) / PriceRentRatio;
+            return CalHouseDepreciationPrice(year - 1) / PriceRentRatio;
         }
         #endregion 折旧与房租
     }
