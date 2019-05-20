@@ -26,6 +26,7 @@ namespace X.MAX.ADGSQWJ.Domain
             {
                 if (last != null)
                     _Fund.Principal = last.FinalNetAsset;
+                var growthRatio = InterestCalculator.CalGrowthRatio(_Fund.YieldRate, i + 1);
 
                 var buy = new FamilyAssetBuyYearly();
                 buy.Index = i;
@@ -34,6 +35,7 @@ namespace X.MAX.ADGSQWJ.Domain
                 buy.ExpenseHouseLoan = _HouseAsset.CalYearlyLoanPayment(i + 1);
                 buy.FinalHousePrice = _HouseAsset.CalHouseDepreciationPrice(i + 1);
                 buy.FinalHouseDebt = _HouseAsset.CalYearlyLoanResidualPrinciple(i + 1);
+                buy.FinalNetAssetRelative = buy.FinalNetAsset / growthRatio;
                 _BuyList.Add(buy);
 
                 var rent = new FamilyAssetRentYearly();
@@ -42,6 +44,7 @@ namespace X.MAX.ADGSQWJ.Domain
                 rent.IncomeInterest = _Fund.CalYield();
                 rent.IncomeHouseLoan = _HouseAsset.CalYearlyLoanPayment(i + 1);
                 rent.ExpenseHouseRent = _HouseAsset.CalRent(i + 1);
+                rent.FinalNetAssetRelative = rent.FinalNetAsset / growthRatio;
                 _RentList.Add(rent);
                 last = rent;
             }

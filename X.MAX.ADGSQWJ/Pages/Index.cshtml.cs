@@ -12,7 +12,7 @@ namespace X.MAX.ADGSQWJ.Pages
     {
         public decimal? _HousePrice { get; set; } = 3000000;
         public decimal? _HouseDepreciationRate { get; set; } = 0.02m;
-        public decimal? _HousePriceRiseRate { get; set; } = 0.05m;
+        public decimal? _HousePriceRiseRate { get; set; } = 0.06m;
         public decimal? _PriceRentRatio { get; set; } = 60;
         public decimal? _DownPaymentRatio { get; set; } = 0.3m;
         public decimal? _LoanRateYearly { get; set; } = 0.04405m;

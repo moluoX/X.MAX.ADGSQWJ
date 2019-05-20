@@ -5,14 +5,25 @@
 
     var netAssetsBuyStr = "";
     var netAssetsRentStr = "";
+    var netAssetsBuyRelativeStr = "";
+    var netAssetsRentRelativeStr = "";
     if (Model._BuyList.Any())
     {
         var netAssetsBuy = Model._BuyList.Select(x => x.FinalNetAsset.ToString("#0")).ToList();
         netAssetsBuy.Insert(0, Model._BuyList[0].InitialNetAsset.ToString("#0"));
         netAssetsBuyStr = string.Join(",", netAssetsBuy);
+
         var netAssetsRent = Model._RentList.Select(x => x.FinalNetAsset.ToString("#0")).ToList();
         netAssetsRent.Insert(0, Model._RentList[0].InitialNetAsset.ToString("#0"));
         netAssetsRentStr = string.Join(",", netAssetsRent);
+
+        var netAssetsBuyRelative = Model._BuyList.Select(x => x.FinalNetAssetRelative.ToString("#0")).ToList();
+        netAssetsBuyRelative.Insert(0, Model._BuyList[0].InitialNetAsset.ToString("#0"));
+        netAssetsBuyRelativeStr = string.Join(",", netAssetsBuyRelative);
+
+        var netAssetsRentRelative = Model._RentList.Select(x => x.FinalNetAssetRelative.ToString("#0")).ToList();
+        netAssetsRentRelative.Insert(0, Model._RentList[0].InitialNetAsset.ToString("#0"));
+        netAssetsRentRelativeStr = string.Join(",", netAssetsRentRelative);
     }
 }
 
@@ -54,6 +65,7 @@
         <input type="text" class="form-control" name="BuildYears" value="@Model._BuildYears">
     </div>
     <button type="submit" class="btn btn-default">演算</button>
+    <span>注：资产流入项仅包括 购房首付款 及 每年房贷还款额。</span>
 </form>
 
 <div>
@@ -69,7 +81,7 @@
                     <th rowspan="2">第几年</th>
                     <th colspan="3">年初资产</th>
                     <th rowspan="2">年还款额</th>
-                    <th colspan="3">年末资产</th>
+                    <th colspan="4">年末资产</th>
                 </tr>
                 <tr>
                     <th>房产价值</th>
@@ -78,20 +90,22 @@
                     <th>房产价值</th>
                     <th>房贷负债</th>
                     <th>净资产</th>
+                    <th>相对净资产</th>
                 </tr>
                 @foreach (var item in Model._BuyList)
-                                {
-                <tr>
-                    <td>@(item.Index + 1)</td>
-                    <td>@item.InitialHousePrice.ToString("#0")</td>
-                    <td>@item.InitialHouseDebt.ToString("#0")</td>
-                    <td>@item.InitialNetAsset.ToString("#0")</td>
-                    <td>@item.ExpenseHouseLoan.ToString("#0")</td>
-                    <td>@item.FinalHousePrice.ToString("#0")</td>
-                    <td>@item.FinalHouseDebt.ToString("#0")</td>
-                    <td>@item.FinalNetAsset.ToString("#0")</td>
-                </tr>
-                                }
+                {
+                    <tr>
+                        <td>@(item.Index + 1)</td>
+                        <td>@item.InitialHousePrice.ToString("#0")</td>
+                        <td>@item.InitialHouseDebt.ToString("#0")</td>
+                        <td>@item.InitialNetAsset.ToString("#0")</td>
+                        <td>@item.ExpenseHouseLoan.ToString("#0")</td>
+                        <td>@item.FinalHousePrice.ToString("#0")</td>
+                        <td>@item.FinalHouseDebt.ToString("#0")</td>
+                        <td>@item.FinalNetAsset.ToString("#0")</td>
+                        <td>@item.FinalNetAssetRelative.ToString("#0")</td>
+                    </tr>
+                }
             </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="divRent">
@@ -103,22 +117,25 @@
                     <th>房贷转移收入</th>
                     <th>房租支出</th>
                     <th>年末净资产</th>
+                    <th>年末相对净资产</th>
                 </tr>
                 @foreach (var item in Model._RentList)
-                                {
-                <tr>
-                    <td>@(item.Index + 1)</td>
-                    <td>@item.InitialNetAsset.ToString("#0")</td>
-                    <td>@item.IncomeInterest.ToString("#0")</td>
-                    <td>@item.IncomeHouseLoan.ToString("#0")</td>
-                    <td>@item.ExpenseHouseRent.ToString("#0")</td>
-                    <td>@item.FinalNetAsset.ToString("#0")</td>
-                </tr>
-                                }
+                {
+                    <tr>
+                        <td>@(item.Index + 1)</td>
+                        <td>@item.InitialNetAsset.ToString("#0")</td>
+                        <td>@item.IncomeInterest.ToString("#0")</td>
+                        <td>@item.IncomeHouseLoan.ToString("#0")</td>
+                        <td>@item.ExpenseHouseRent.ToString("#0")</td>
+                        <td>@item.FinalNetAsset.ToString("#0")</td>
+                        <td>@item.FinalNetAssetRelative.ToString("#0")</td>
+                    </tr>
+                }
             </table>
         </div>
         <div role="tabpanel" class="tab-pane active" id="divCompare">
-            <div id="divChart" style="width: 1000px;height:400px;"></div>
+            <div id="divChartNetAsset" style="width: 1000px;height:400px;"></div>
+            <div id="divChartNetAssetRelative" style="width: 1000px;height:400px;"></div>
         </div>
     </div>
 </div>
@@ -132,7 +149,8 @@
                 var xdata = Array.apply(null, Array(years + 1)).map(function (item, i) {
                     return i;
                 });
-                var myChart = echarts.init(document.getElementById('divChart'));
+
+                var chartNetAsset = echarts.init(document.getElementById('divChartNetAsset'));
                 option = {
                     title: {
                         text: '净资产'
@@ -176,7 +194,53 @@
                         }
                     ]
                 };
-                myChart.setOption(option);
+                chartNetAsset.setOption(option);
+                
+                var chartNetAssetRelative = echarts.init(document.getElementById('divChartNetAssetRelative'));
+                option = {
+                    title: {
+                        text: '相对净资产'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['买房', '租房']
+                    },
+                    grid: {
+                        left: '0',
+                        right: '50px',
+                        bottom: '0',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        name: '第N年',
+                        type: 'category',
+                        boundaryGap: false,
+                        data: xdata
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: '买房',
+                            type: 'line',
+                            data: [@netAssetsBuyRelativeStr]
+                        },
+                        {
+                            name: '租房',
+                            type: 'line',
+                            data: [@netAssetsRentRelativeStr]
+                        }
+                    ]
+                };
+                chartNetAssetRelative.setOption(option);
             }
         });
     </script>

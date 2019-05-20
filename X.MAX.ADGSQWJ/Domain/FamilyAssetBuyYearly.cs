@@ -42,5 +42,10 @@ namespace X.MAX.ADGSQWJ.Domain
         /// 期末净资产
         /// </summary>
         public decimal FinalNetAsset { get { return FinalHousePrice - FinalHouseDebt - ExpenseHouseLoan; } }
+
+        /// <summary>
+        /// 期末相对净资产
+        /// </summary>
+        public decimal FinalNetAssetRelative { get; set; }
     }
 }
