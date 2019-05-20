@@ -2,6 +2,18 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
+
+    var netAssetsBuyStr = "";
+    var netAssetsRentStr = "";
+    if (Model._BuyList.Any())
+    {
+        var netAssetsBuy = Model._BuyList.Select(x => x.FinalNetAsset.ToString("#0")).ToList();
+        netAssetsBuy.Insert(0, Model._BuyList[0].InitialNetAsset.ToString("#0"));
+        netAssetsBuyStr = string.Join(",", netAssetsBuy);
+        var netAssetsRent = Model._RentList.Select(x => x.FinalNetAsset.ToString("#0")).ToList();
+        netAssetsRent.Insert(0, Model._RentList[0].InitialNetAsset.ToString("#0"));
+        netAssetsRentStr = string.Join(",", netAssetsRent);
+    }
 }
 
 <form id="formArguments" class="form-inline" method="post">
@@ -37,17 +49,21 @@
         <label for="HousePrice">资金年化收益率</label>
         <input type="text" class="form-control" name="YieldRate" value="@Model._YieldRate">
     </div>
+    <div class="form-group">
+        <label for="HousePrice">演算年数</label>
+        <input type="text" class="form-control" name="BuildYears" value="@Model._BuildYears">
+    </div>
     <button type="submit" class="btn btn-default">演算</button>
 </form>
 
 <div>
     <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#divBuy" aria-controls="divBuy" role="tab" data-toggle="tab">买房</a></li>
+        <li role="presentation"><a href="#divBuy" aria-controls="divBuy" role="tab" data-toggle="tab">买房</a></li>
         <li role="presentation"><a href="#divRent" aria-controls="divRent" role="tab" data-toggle="tab">租房</a></li>
-        <li role="presentation"><a href="#divCompare" aria-controls="divCompare" role="tab" data-toggle="tab">对比</a></li>
+        <li role="presentation" class="active"><a href="#divCompare" aria-controls="divCompare" role="tab" data-toggle="tab">对比</a></li>
     </ul>
     <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="divBuy">
+        <div role="tabpanel" class="tab-pane" id="divBuy">
             <table class="table table-bordered table-hover">
                 <tr>
                     <th rowspan="2">第几年</th>
@@ -64,18 +80,18 @@
                     <th>净资产</th>
                 </tr>
                 @foreach (var item in Model._BuyList)
-                {
-                    <tr>
-                        <td>@(item.Index + 1)</td>
-                        <td>@item.InitialHousePrice.ToString("#0")</td>
-                        <td>@item.InitialHouseDebt.ToString("#0")</td>
-                        <td>@item.InitialNetAsset.ToString("#0")</td>
-                        <td>@item.ExpenseHouseLoan.ToString("#0")</td>
-                        <td>@item.FinalHousePrice.ToString("#0")</td>
-                        <td>@item.FinalHouseDebt.ToString("#0")</td>
-                        <td>@item.FinalNetAsset.ToString("#0")</td>
-                    </tr>
-                }
+                                {
+                <tr>
+                    <td>@(item.Index + 1)</td>
+                    <td>@item.InitialHousePrice.ToString("#0")</td>
+                    <td>@item.InitialHouseDebt.ToString("#0")</td>
+                    <td>@item.InitialNetAsset.ToString("#0")</td>
+                    <td>@item.ExpenseHouseLoan.ToString("#0")</td>
+                    <td>@item.FinalHousePrice.ToString("#0")</td>
+                    <td>@item.FinalHouseDebt.ToString("#0")</td>
+                    <td>@item.FinalNetAsset.ToString("#0")</td>
+                </tr>
+                                }
             </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="divRent">
@@ -89,27 +105,79 @@
                     <th>年末净资产</th>
                 </tr>
                 @foreach (var item in Model._RentList)
-                {
-                    <tr>
-                        <td>@(item.Index + 1)</td>
-                        <td>@item.InitialNetAsset.ToString("#0")</td>
-                        <td>@item.IncomeInterest.ToString("#0")</td>
-                        <td>@item.IncomeHouseLoan.ToString("#0")</td>
-                        <td>@item.ExpenseHouseRent.ToString("#0")</td>
-                        <td>@item.FinalNetAsset.ToString("#0")</td>
-                    </tr>
-                }
+                                {
+                <tr>
+                    <td>@(item.Index + 1)</td>
+                    <td>@item.InitialNetAsset.ToString("#0")</td>
+                    <td>@item.IncomeInterest.ToString("#0")</td>
+                    <td>@item.IncomeHouseLoan.ToString("#0")</td>
+                    <td>@item.ExpenseHouseRent.ToString("#0")</td>
+                    <td>@item.FinalNetAsset.ToString("#0")</td>
+                </tr>
+                                }
             </table>
         </div>
-        <div role="tabpanel" class="tab-pane" id="divCompare">
-            图标
+        <div role="tabpanel" class="tab-pane active" id="divCompare">
+            <div id="divChart" style="width: 1000px;height:400px;"></div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
 @section Scripts{
     <script>
         $(function () {
-        })();
+            var years = @Model._BuyList.Count();
+            if (years > 0) {
+                var xdata = Array.apply(null, Array(years + 1)).map(function (item, i) {
+                    return i;
+                });
+                var myChart = echarts.init(document.getElementById('divChart'));
+                option = {
+                    title: {
+                        text: '净资产'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['买房', '租房']
+                    },
+                    grid: {
+                        left: '0',
+                        right: '50px',
+                        bottom: '0',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        name: '第N年',
+                        type: 'category',
+                        boundaryGap: false,
+                        data: xdata
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: '买房',
+                            type: 'line',
+                            data: [@netAssetsBuyStr]
+                        },
+                        {
+                            name: '租房',
+                            type: 'line',
+                            data: [@netAssetsRentStr]
+                        }
+                    ]
+                };
+                myChart.setOption(option);
+            }
+        });
     </script>
 }
